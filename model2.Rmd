@@ -1,0 +1,113 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Model 1 : Full Model 1
+
+```{r}
+library(MASS)
+library(tidyverse)
+library(car)
+library(perturb)
+library(corpcor)
+library(caret)
+library(RANN)
+library(bnstruct)
+library(DMwR)
+library(psych)
+library(corrplot)
+library(broom)
+library(gridExtra)
+#library(grid)
+library(arules)
+library(ggrepel)
+library(olsrr)
+df <- read.csv('Data/data_train_2.csv',row.names = 1)
+head(df)
+```
+
+```{r}
+model <- glm(data = df, class ~ ., family='binomial')
+
+# extract the model summary
+summary(model)
+```
+
+Testing the null deviance and deviance we can see that our model significanly different than null model
+
+```{r}
+
+with(model, pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = FALSE))
+```
+
+Residull plots
+
+```{r}
+residualPlots(model, type = c("deviance"))
+```
+
+
+
+
+
+```{r}
+plot(model)
+```
+
+
+```{r}
+mod1_table <- augment(model)
+mod1_table$res_dev <- residuals(model, type = "deviance")
+head(mod1_table)
+row.names(mod1_table)<-row.names(df)
+```
+
+
+
+```{r}
+
+ggplot(mod1_table, aes(.fitted,res_dev))+geom_point()+geom_smooth()
+ggplot(mod1_table, aes(age,res_dev))+geom_point()+geom_smooth()
+ggplot(mod1_table, aes(trestbps,res_dev))+geom_point()+geom_smooth()
+ggplot(mod1_table, aes(chol,res_dev))+geom_point()+geom_smooth()
+ggplot(mod1_table, aes(thalach,res_dev))+geom_point()+geom_smooth()
+ggplot(mod1_table, aes(oldpeak,res_dev))+geom_point()+geom_smooth()
+ggplot(mod1_table, aes(slope,res_dev))+geom_point()+geom_smooth()
+ggplot(mod1_table, aes(ca,res_dev))+geom_point()+geom_smooth()
+```
+
+```{r}
+crPlots(model,layout = c(1,1))
+```
+
+
+```{r}
+mod1_table['index']<-row.names(mod1_table)
+ggplot(mod1_table) +
+  geom_label(aes(x = index, 
+                      y = .cooksd, 
+                      label = index))
+ggplot(mod1_table) +
+  geom_text_repel(aes(x = index, 
+                      y = .cooksd, 
+                      label = index))
+```
+
+```{r}
+vif(model)
+```
+
+```{r}
+step1 <- stepAIC(model,direction = "both",trace = FALSE)
+summary(step1)
+```
+
+```{r}
+plot(step1)
+```
+
+```{r}
+crPlots(step1,layout = c(1,1))
+```
+
