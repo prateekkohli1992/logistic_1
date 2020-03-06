@@ -28,7 +28,8 @@ head(df)
 ```
 
 ```{r}
-model <- glm(data = df, class ~ ., family='binomial')
+model <- glm(data = df, class ~ .-trestbps+log(trestbps)-chol+log(chol)-slope+poly(slope,2)-cp+factor(ca)
+             -ca, family='binomial')
 
 # extract the model summary
 summary(model)
@@ -44,7 +45,7 @@ with(model, pchisq(null.deviance - deviance, df.null - df.residual, lower.tail =
 Residull plots
 
 ```{r}
-residualPlots(model, type = c("deviance"))
+residualPlots(model, type = c("deviance"),layout=c(1,1))
 ```
 
 
